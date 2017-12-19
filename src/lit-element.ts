@@ -1,6 +1,6 @@
 import { html, render as litRender, TemplateResult } from '../node_modules/lit-html/lit-html.js';
 
-export {html} from '../node_modules/lit-html/lit-html.js';
+export { html } from '../node_modules/lit-html/lit-html.js';
 
 export interface HTMLClass extends HTMLElement {
     new(): HTMLClass;
@@ -81,6 +81,8 @@ export const LitElement = (superclass: HTMLClass) => class extends superclass {
         const props = this.constructor.properties;
         this._wait = true;
         for (let prop in props) {
+            if (typeof prop !== 'object')
+                props[prop] = { type: prop };
             this._makeGetterSetter(prop, props[prop])
         }
         delete this._wait;
@@ -106,7 +108,7 @@ export const LitElement = (superclass: HTMLClass) => class extends superclass {
                 const resolved: any = (val != null && val instanceof Promise
                     ? await val
                     : val);
-                if (typeof info === 'object' && info.reflectToAttribute) {
+                if (info.reflectToAttribute) {
                     /* Set the new value by setting the observed attribute.
                      * This will trigger attributeChangedCallback() which will
                      * convert the attribute data to a property,
@@ -124,34 +126,29 @@ export const LitElement = (superclass: HTMLClass) => class extends superclass {
             }
         });
 
-        if (typeof info === 'object') {
-            if (info.reflectToAttribute &&
-                (info.type === Object || info.type === Array)) {
-                console.warn('Rich Data shouldn\'t be set as attribte!')
-            }
-            if (info.observer) {
-                if (this[info.observer]) {
-                    // Establish the property-change observer
-                    this._methodsToCall[prop] = this[info.observer].bind(this);
-                } else {
-                    console.warn(`Method ${info.observer} not defined!`);
-                }
-            }
-            if (info.value !== undefined) {
-                // Initialize using the included value and the new setter()
-                this[prop] = (typeof(info.value) === 'function'
-                  ? info.value.call( this )
-                  : info.value);
-
+        if (info.reflectToAttribute &&
+            (info.type === Object || info.type === Array)) {
+            console.warn('Rich Data shouldn\'t be set as attribte!')
+        }
+        if (info.observer) {
+            if (this[info.observer]) {
+                // Establish the property-change observer
+                this._methodsToCall[prop] = this[info.observer].bind(this);
             } else {
-                // Initialize via the matching attribute and the new setter()
-                this[prop] = this.getAttribute(attr);
+                console.warn(`Method ${info.observer} not defined!`);
             }
+        }
+        if (info.value !== undefined) {
+            // Initialize using the included value and the new setter()
+            this[prop] = (typeof (info.value) === 'function'
+                ? info.value.call(this)
+                : info.value);
 
         } else {
             // Initialize via the matching attribute and the new setter()
             this[prop] = this.getAttribute(attr);
         }
+
     }
 
     /**
