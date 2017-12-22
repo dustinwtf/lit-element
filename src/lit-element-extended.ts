@@ -5,4 +5,4 @@ import { LitLite, HTMLClass, HTMLCollectionByID, data, propConfig, properties, c
 export const LitElementExtended = (superclass: HTMLClass) => LitLite(superclass, html, render);
 
 export { html, svg, TemplateResult };
-export { HTMLClass, HTMLCollectionByID, data, propConfig, properties, camelCaseToKebab, methodsToCall };
+export { HTMLClass, HTMLCollectionByID, data, propConfig, properties, camelCaseToKebab };
